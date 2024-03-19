@@ -1,2 +1,4 @@
-# gearvr-controller.js
-A util that allows easy access to a gear vr controller in THREE.js
+# GearVRController.js
+
+A utility that allows easy access to a Gear VR controller data for THREE.js
+
