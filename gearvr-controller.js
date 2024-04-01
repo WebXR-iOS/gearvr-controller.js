@@ -1,4 +1,4 @@
-class ControllerBluetoothInterface {
+class GearVRController {
     constructor(onControllerDataReceived, onDeviceDisconnected) {
         this.gattServer               = null;
         this.batteryService           = null;
@@ -35,24 +35,24 @@ class ControllerBluetoothInterface {
         return navigator.bluetooth.requestDevice({
             acceptAllDevices: true,
             optionalServices: [
-                ControllerBluetoothInterface.UUID_CUSTOM_SERVICE
+                GearVRController.UUID_CUSTOM_SERVICE
             ]
         })
             .then(this.onDeviceConnected)
             .then(gattServer => this.gattServer = gattServer)
 
             // Get custom service
-            .then(() => this.gattServer.getPrimaryService(ControllerBluetoothInterface.UUID_CUSTOM_SERVICE))
+            .then(() => this.gattServer.getPrimaryService(GearVRController.UUID_CUSTOM_SERVICE))
             .then(customService => this.customService = customService)
 
             //todo: battery service, device information service
 
             .then(() => this.customService
-                .getCharacteristic(ControllerBluetoothInterface.UUID_CUSTOM_SERVICE_WRITE)
+                .getCharacteristic(GearVRController.UUID_CUSTOM_SERVICE_WRITE)
                 .then(characteristic => this.customServiceWrite = characteristic))
 
             .then(() => this.customService
-                .getCharacteristic(ControllerBluetoothInterface.UUID_CUSTOM_SERVICE_NOTIFY)
+                .getCharacteristic(GearVRController.UUID_CUSTOM_SERVICE_NOTIFY)
                 .then(characteristic => this.customServiceNotify = characteristic))
 
             .then(() => this.customServiceNotify
@@ -83,7 +83,7 @@ class ControllerBluetoothInterface {
         ) & 0x3FF;
 
         // com.samsung.android.app.vr.input.service/ui/c.class:L222
-        const timestamp = ((new Int32Array(buffer.slice(0, 3))[0]) & 0xFFFFFFFF) / 1000 * ControllerBluetoothInterface.TIMESTAMP_FACTOR;
+        const timestamp = ((new Int32Array(buffer.slice(0, 3))[0]) & 0xFFFFFFFF) / 1000 * GearVRController.TIMESTAMP_FACTOR;
 
         // com.samsung.android.app.vr.input.service/ui/c.class:L222
         const temperature = eventData[57];
@@ -92,7 +92,7 @@ class ControllerBluetoothInterface {
                   getAccelerometerFloatWithOffsetFromArrayBufferAtIndex,
                   getGyroscopeFloatWithOffsetFromArrayBufferAtIndex,
                   getMagnetometerFloatWithOffsetFromArrayBufferAtIndex
-              } = ControllerBluetoothInterface;
+              } = GearVRController;
 
         // 3 x accelerometer and gyroscope x,y,z values per data event
         const accel = [
@@ -105,7 +105,7 @@ class ControllerBluetoothInterface {
             // getAccelerometerFloatWithOffsetFromArrayBufferAtIndex(buffer, 4, 2),
             // getAccelerometerFloatWithOffsetFromArrayBufferAtIndex(buffer, 6, 2),
             // getAccelerometerFloatWithOffsetFromArrayBufferAtIndex(buffer, 8, 2)
-        ].map(v => v * ControllerBluetoothInterface.ACCEL_FACTOR);
+        ].map(v => v * GearVRController.ACCEL_FACTOR);
 
         const gyro = [
             getGyroscopeFloatWithOffsetFromArrayBufferAtIndex(buffer, 10, 0),
@@ -117,7 +117,7 @@ class ControllerBluetoothInterface {
             // getGyroscopeFloatWithOffsetFromArrayBufferAtIndex(buffer, 10, 2),
             // getGyroscopeFloatWithOffsetFromArrayBufferAtIndex(buffer, 12, 2),
             // getGyroscopeFloatWithOffsetFromArrayBufferAtIndex(buffer, 14, 2)
-        ].map(v => v * ControllerBluetoothInterface.GYRO_FACTOR);
+        ].map(v => v * GearVRController.GYRO_FACTOR);
 
         const magX = getMagnetometerFloatWithOffsetFromArrayBufferAtIndex(buffer, 0);
         const magY = getMagnetometerFloatWithOffsetFromArrayBufferAtIndex(buffer, 2);
@@ -149,53 +149,53 @@ class ControllerBluetoothInterface {
     }
 
     runCommand(commandValue) {
-        const {getLittleEndianUint8Array, onBluetoothError} = ControllerBluetoothInterface;
+        const {getLittleEndianUint8Array, onBluetoothError} = GearVRController;
 
         return this.customServiceWrite.writeValue(getLittleEndianUint8Array(commandValue))
             .catch(onBluetoothError);
     }
 }
 
-ControllerBluetoothInterface.onBluetoothError = e => {
+GearVRController.onBluetoothError = e => {
     console.warn('Error: ' + e);
 };
 
-ControllerBluetoothInterface.UUID_CUSTOM_SERVICE        = "4f63756c-7573-2054-6872-65656d6f7465";
-ControllerBluetoothInterface.UUID_CUSTOM_SERVICE_WRITE  = "c8c51726-81bc-483b-a052-f7a14ea3d282";
-ControllerBluetoothInterface.UUID_CUSTOM_SERVICE_NOTIFY = "c8c51726-81bc-483b-a052-f7a14ea3d281";
+GearVRController.UUID_CUSTOM_SERVICE        = "4f63756c-7573-2054-6872-65656d6f7465";
+GearVRController.UUID_CUSTOM_SERVICE_WRITE  = "c8c51726-81bc-483b-a052-f7a14ea3d282";
+GearVRController.UUID_CUSTOM_SERVICE_NOTIFY = "c8c51726-81bc-483b-a052-f7a14ea3d281";
 
-ControllerBluetoothInterface.CMD_OFF                          = '0000';
-ControllerBluetoothInterface.CMD_SENSOR                       = '0100';
-ControllerBluetoothInterface.CMD_UNKNOWN_FIRMWARE_UPDATE_FUNC = '0200';
-ControllerBluetoothInterface.CMD_CALIBRATE                    = '0300';
-ControllerBluetoothInterface.CMD_KEEP_ALIVE                   = '0400';
-ControllerBluetoothInterface.CMD_UNKNOWN_SETTING              = '0500';
-ControllerBluetoothInterface.CMD_LPM_ENABLE                   = '0600';
-ControllerBluetoothInterface.CMD_LPM_DISABLE                  = '0700';
-ControllerBluetoothInterface.CMD_VR_MODE                      = '0800';
+GearVRController.CMD_OFF                          = '0000';
+GearVRController.CMD_SENSOR                       = '0100';
+GearVRController.CMD_UNKNOWN_FIRMWARE_UPDATE_FUNC = '0200';
+GearVRController.CMD_CALIBRATE                    = '0300';
+GearVRController.CMD_KEEP_ALIVE                   = '0400';
+GearVRController.CMD_UNKNOWN_SETTING              = '0500';
+GearVRController.CMD_LPM_ENABLE                   = '0600';
+GearVRController.CMD_LPM_DISABLE                  = '0700';
+GearVRController.CMD_VR_MODE                      = '0800';
 
-ControllerBluetoothInterface.GYRO_FACTOR      = 0.0001; // to radians / s
-ControllerBluetoothInterface.ACCEL_FACTOR     = 0.00001; // to g (9.81 m/s**2)
-ControllerBluetoothInterface.TIMESTAMP_FACTOR = 0.001; // to seconds
+GearVRController.GYRO_FACTOR      = 0.0001; // to radians / s
+GearVRController.ACCEL_FACTOR     = 0.00001; // to g (9.81 m/s**2)
+GearVRController.TIMESTAMP_FACTOR = 0.001; // to seconds
 
-ControllerBluetoothInterface.getAccelerometerFloatWithOffsetFromArrayBufferAtIndex = (arrayBuffer, offset, index) => {
+GearVRController.getAccelerometerFloatWithOffsetFromArrayBufferAtIndex = (arrayBuffer, offset, index) => {
     const arrayOfShort = new Int16Array(arrayBuffer.slice(16 * index + offset, 16 * index + offset + 2));
     return (new Float32Array([arrayOfShort[0] * 10000.0 * 9.80665 / 2048.0]))[0];
 };
 
-ControllerBluetoothInterface.getGyroscopeFloatWithOffsetFromArrayBufferAtIndex = (arrayBuffer, offset, index) => {
+GearVRController.getGyroscopeFloatWithOffsetFromArrayBufferAtIndex = (arrayBuffer, offset, index) => {
     const arrayOfShort = new Int16Array(arrayBuffer.slice(16 * index + offset, 16 * index + offset + 2));
     return (new Float32Array([arrayOfShort[0] * 10000.0 * 0.017453292 / 14.285]))[0];
 };
 
-ControllerBluetoothInterface.getMagnetometerFloatWithOffsetFromArrayBufferAtIndex = (arrayBuffer, offset) => {
+GearVRController.getMagnetometerFloatWithOffsetFromArrayBufferAtIndex = (arrayBuffer, offset) => {
     const arrayOfShort = new Int16Array(arrayBuffer.slice(32 + offset, 32 + offset + 2));
     return (new Float32Array([arrayOfShort[0] * 0.06]))[0];
 };
 
-ControllerBluetoothInterface.getLength = (f1, f2, f3) => Math.sqrt(f1 ** 2 + f2 ** 2 + f3 ** 2);
+GearVRController.getLength = (f1, f2, f3) => Math.sqrt(f1 ** 2 + f2 ** 2 + f3 ** 2);
 
-ControllerBluetoothInterface.getLittleEndianUint8Array = hexString => {
+GearVRController.getLittleEndianUint8Array = hexString => {
     const leAB = new Uint8Array(hexString.length >> 1);
 
     for (let i = 0, j = 0; i + 2 <= hexString.length; i += 2, j++) {
@@ -204,3 +204,5 @@ ControllerBluetoothInterface.getLittleEndianUint8Array = hexString => {
 
     return leAB;
 };
+
+export { GearVRController };
